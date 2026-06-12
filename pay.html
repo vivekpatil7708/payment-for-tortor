@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Vivek Sports Payment</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --card: #171a21;
+      --muted: #9aa4b2;
+      --text: #f4f7fb;
+      --accent: #22c55e;
+      --accent2: #2563eb;
+      --border: #2a3140;
+      --danger: #ef4444;
+      --shadow: 0 20px 50px rgba(0,0,0,.35);
+      --radius: 20px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: radial-gradient(circle at top, #1c2333 0%, var(--bg) 45%);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+    .wrap { width: 100%; max-width: 420px; }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      backdrop-filter: blur(10px);
+    }
+    .badge {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(37,99,235,.14);
+      color: #bfdbfe;
+      font-size: 12px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    h1 { margin: 0 0 8px; font-size: 30px; line-height: 1.1; }
+    p { margin: 0; color: var(--muted); line-height: 1.5; }
+    .amount {
+      margin: 22px 0 10px;
+      font-size: 46px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+    .meta {
+      margin-top: 16px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .row { margin-bottom: 12px; }
+    .row:last-child { margin-bottom: 0; }
+    .label { color: var(--muted); font-size: 13px; margin-bottom: 4px; }
+    .value { font-size: 15px; word-break: break-word; }
+    .btns { display: grid; gap: 12px; margin-top: 22px; }
+    button, a.copy {
+      width: 100%;
+      border: 0;
+      border-radius: 16px;
+      padding: 16px 18px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+    }
+    .pay {
+      background: linear-gradient(135deg, var(--accent), #16a34a);
+      color: #08110b;
+    }
+    .copy {
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .help {
+      margin-top: 18px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .error {
+      display: none;
+      margin-top: 14px;
+      color: #fecaca;
+      background: rgba(239,68,68,.12);
+      border: 1px solid rgba(239,68,68,.25);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <div class="badge">Vivek Sports</div>
+      <h1>Badminton payment</h1>
+      <p>Tap the button below to open Google Pay or another UPI app with the amount already filled in.</p>
+
+      <div class="amount">₹<span id="amountText">249</span></div>
+
+      <div class="meta">
+        <div class="row">
+          <div class="label">UPI ID</div>
+          <div class="value" id="upiText">vivekpatil2020770088-1@okicici</div>
+        </div>
+        <div class="row">
+          <div class="label">Payment note</div>
+          <div class="value" id="noteText">Badminton booking</div>
+        </div>
+      </div>
+
+      <div class="btns">
+        <button class="pay" id="payBtn">Pay with Google Pay / UPI</button>
+        <button class="copy" id="copyBtn">Copy UPI ID</button>
+      </div>
+
+      <div class="error" id="errorBox"></div>
+      <p class="help">If Google Pay does not open, copy the UPI ID and pay manually in any UPI app.</p>
+    </section>
+  </main>
+
+  <script>
+    const DEFAULT_UPI = 'vivekpatil2020770088-1@okicici';
+    const DEFAULT_NAME = 'Vivek Sports';
+    const DEFAULT_NOTE = 'Badminton booking';
+    const DEFAULT_AMOUNT = '249';
+
+    const params = new URLSearchParams(window.location.search);
+    const amount = (params.get('amount') || params.get('am') || DEFAULT_AMOUNT).trim();
+    const note = (params.get('note') || params.get('tn') || DEFAULT_NOTE).trim();
+    const upi = (params.get('upi') || params.get('pa') || DEFAULT_UPI).trim();
+    const name = (params.get('name') || params.get('pn') || DEFAULT_NAME).trim();
+
+    document.getElementById('amountText').textContent = amount;
+    document.getElementById('upiText').textContent = upi;
+    document.getElementById('noteText').textContent = note;
+
+    function showError(msg) {
+      const box = document.getElementById('errorBox');
+      box.style.display = 'block';
+      box.textContent = msg;
+    }
+
+    document.getElementById('payBtn').addEventListener('click', () => {
+      const upiUrl = `upi://pay?pa=${encodeURIComponent(upi)}&pn=${encodeURIComponent(name)}&am=${encodeURIComponent(amount)}&cu=INR&tn=${encodeURIComponent(note)}`;
+      try {
+        window.location.href = upiUrl;
+        setTimeout(() => {
+          showError('If no UPI app opened, use the Copy UPI ID button and pay manually. Some browsers block direct app opening.');
+        }, 1500);
+      } catch (e) {
+        showError('Could not open the UPI app automatically. Please copy the UPI ID and pay manually.');
+      }
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(upi);
+        const btn = document.getElementById('copyBtn');
+        const old = btn.textContent;
+        btn.textContent = 'UPI ID Copied';
+        setTimeout(() => btn.textContent = old, 1800);
+      } catch (e) {
+        showError('Clipboard access failed. Please copy the UPI ID manually: ' + upi);
+      }
+    });
+  </script>
+</body>
+</html>
